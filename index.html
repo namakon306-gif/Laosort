@@ -1,0 +1,313 @@
+# Laosort
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>WIN Generator V3</title>
+<style>
+*{box-sizing:border-box}
+body{
+    margin:0;
+    padding:15px;
+    font-family:Arial,sans-serif;
+    background:#f3f4f6;
+}
+.box{
+    max-width:760px;
+    margin:auto;
+    background:#fff;
+    padding:20px;
+    border-radius:12px;
+    box-shadow:0 4px 12px rgba(0,0,0,.08);
+}
+h2{
+    margin:0 0 20px;
+    text-align:center;
+    color:#1d4ed8;
+}
+.grid-inputs{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+    margin-bottom:18px;
+}
+.row-section{
+    background:#f9fafb;
+    border:1px solid #e5e7eb;
+    padding:12px;
+    border-radius:8px;
+}
+label{
+    display:block;
+    margin-bottom:6px;
+    font-weight:bold;
+}
+.input-style{
+    width:100%;
+    padding:10px;
+    font-size:18px;
+    border:1px solid #d1d5db;
+    border-radius:6px;
+}
+.btn-calc{
+    width:100%;
+    padding:14px;
+    font-size:18px;
+    font-weight:bold;
+    border:none;
+    border-radius:8px;
+    background:#2563eb;
+    color:#fff;
+    cursor:pointer;
+    margin-bottom:18px;
+}
+.result-box{
+    background:#eff6ff;
+    border-left:5px solid #2563eb;
+    padding:15px;
+    border-radius:8px;
+    margin-bottom:15px;
+}
+.value-text{
+    font-size:20px;
+    font-weight:bold;
+    word-break:break-all;
+}
+.badge-count{
+    background:#ea580c;
+    color:#fff;
+    padding:2px 8px;
+    border-radius:12px;
+    font-size:12px;
+    margin-left:6px;
+}
+.win-box{
+    background:#f0fdf4;
+    border-left:5px solid #16a34a;
+    padding:15px;
+    border-radius:8px;
+    margin-bottom:15px;
+}
+.win-outputs{
+    margin-top:10px;
+    background:#fff;
+    border:1px solid #bbf7d0;
+    padding:10px;
+    border-radius:6px;
+    min-height:40px;
+    font-size:17px;
+    font-weight:bold;
+    color:#15803d;
+    word-break:break-all;
+}
+.btn-copy{
+    float:right;
+    background:#4b5563;
+    color:#fff;
+    border:none;
+    padding:5px 10px;
+    border-radius:4px;
+    cursor:pointer;
+}
+@media(max-width:600px){
+    .grid-inputs{
+        grid-template-columns:1fr;
+    }
+}
+</style>
+</head>
+<body>
+
+<div class="box">
+    <h2>WIN Generator V3 (Priority Mode)</h2>
+
+    <div class="grid-inputs">
+        <div class="row-section">
+            <label>A</label>
+            <input id="inputRowA" class="input-style" type="text" inputmode="numeric">
+        </div>
+
+        <div class="row-section">
+            <label>B</label>
+            <input id="inputRowB" class="input-style" type="text" inputmode="numeric">
+        </div>
+
+        <div class="row-section">
+            <label>C</label>
+            <input id="inputRowC" class="input-style" type="text" inputmode="numeric">
+        </div>
+
+        <div class="row-section">
+            <label>D</label>
+            <input id="inputRowD" class="input-style" type="text" inputmode="numeric">
+        </div>
+    </div>
+
+    <button class="btn-calc" onclick="compareAndWin()">คำนวณ</button>
+
+    <div class="result-box">
+        <b>เลข Final (Priority 4→1)</b>
+        <span id="commonCount" class="badge-count">0 ตัว</span>
+        <br><br>
+        <span id="outputCommon" class="value-text">-</span>
+    </div>
+
+    <div class="win-box">
+        <button class="btn-copy" onclick="copyText('outputWin')">Copy</button>
+        <b>วิน 4 ตัว</b>
+        <span id="winCount" class="badge-count">0 ชุด</span>
+        <div id="outputWin" class="win-outputs">-</div>
+    </div>
+
+    <div class="win-box">
+        <button class="btn-copy" onclick="copyText('outputWin3')">Copy</button>
+        <b>วิน 3 ตัว</b>
+        <span id="win3Count" class="badge-count">0 ชุด</span>
+        <div id="outputWin3" class="win-outputs">-</div>
+    </div>
+
+    <div class="win-box">
+        <button class="btn-copy" onclick="copyText('outputWin2')">Copy</button>
+        <b>วิน 2 ตัว</b>
+        <span id="win2Count" class="badge-count">0 ชุด</span>
+        <div id="outputWin2" class="win-outputs">-</div>
+    </div>
+</div>
+
+<script>function getUniqueDigits(text){
+    text = text.replace(/[^0-9]/g,'');
+    var arr = [];
+
+    for(var i=0;i<text.length;i++){
+        if(arr.indexOf(text[i]) === -1){
+            arr.push(text[i]);
+        }
+    }
+    return arr;
+}
+
+function copyText(id){
+    var text = document.getElementById(id).innerText;
+
+    if(text === "-" || text === "ไม่มี"){
+        alert("ไม่มีข้อมูล");
+        return;
+    }
+
+    navigator.clipboard.writeText(text);
+    alert("คัดลอกสำเร็จ");
+}
+
+function compareAndWin(){
+
+    var ids = ["inputRowA","inputRowB","inputRowC","inputRowD"];
+    var rows = [];
+
+    for(var i=0;i<ids.length;i++){
+        var input = document.getElementById(ids[i]);
+        var cleaned = getUniqueDigits(input.value);
+
+        input.value = cleaned.join("");
+
+        if(cleaned.length > 0){
+            rows.push(cleaned);
+        }
+    }
+
+    if(rows.length === 0){
+        alert("กรุณากรอกข้อมูล");
+        return;
+    }
+
+    /* นับความถี่แต่ละเลข */
+    var countMap = {};
+
+    for(var d=0; d<=9; d++){
+        countMap[d] = 0;
+
+        for(var r=0; r<rows.length; r++){
+            if(rows[r].indexOf(String(d)) !== -1){
+                countMap[d]++;
+            }
+        }
+    }
+
+    /* สร้าง Final ตาม priority 4→1 (ไม่ sort) */
+    var common = [];
+
+    for(var level = rows.length; level >= 1; level--){
+        for(var digit = 0; digit <= 9; digit++){
+            if(countMap[digit] === level){
+                common.push(String(digit));
+                if(common.length >= 7) break;
+            }
+        }
+        if(common.length >= 7) break;
+    }
+
+    document.getElementById("outputCommon").innerText =
+        common.length ? common.join(", ") : "ไม่มี";
+
+    document.getElementById("commonCount").innerText =
+        common.length + " ตัว";
+
+    var n = common.length;
+    var win4 = [];
+    var win3 = [];
+    var win2 = [];
+
+    /* วิน 4 */
+    if(n >= 4){
+        for(var a=0;a<n-3;a++){
+            for(var b=a+1;b<n-2;b++){
+                for(var c=b+1;c<n-1;c++){
+                    for(var d=c+1;d<n;d++){
+                        win4.push(common[a]+common[b]+common[c]+common[d]);
+                    }
+                }
+            }
+        }
+    }
+
+    /* วิน 3 */
+    if(n >= 3){
+        for(var a=0;a<n-2;a++){
+            for(var b=a+1;b<n-1;b++){
+                for(var c=b+1;c<n;c++){
+                    win3.push(common[a]+common[b]+common[c]);
+                }
+            }
+        }
+    }
+
+    /* วิน 2 */
+    if(n >= 2){
+        for(var a=0;a<n-1;a++){
+            for(var b=a+1;b<n;b++){
+                win2.push(common[a]+common[b]);
+            }
+        }
+    }
+
+    document.getElementById("outputWin").innerText =
+        win4.length ? win4.join(" - ") : "ตัวเลขไม่ถึง 4 ตัว";
+
+    document.getElementById("winCount").innerText =
+        win4.length + " ชุด";
+
+    document.getElementById("outputWin3").innerText =
+        win3.length ? win3.join(" - ") : "ตัวเลขไม่ถึง 3 ตัว";
+
+    document.getElementById("win3Count").innerText =
+        win3.length + " ชุด";
+
+    document.getElementById("outputWin2").innerText =
+        win2.length ? win2.join(" - ") : "ตัวเลขไม่ถึง 2 ตัว";
+
+    document.getElementById("win2Count").innerText =
+        win2.length + " ชุด";
+}
+</script>
+</body>
+</html>
